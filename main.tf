@@ -1,28 +1,42 @@
-provider "aws" {
-  region = var.region
+provider "google" {
+  project = "storied-fuze-385721"
+  region = "us-central"
+  credentials = var.GOOGLE_CREDENTIALS
 }
 
-data "aws_ami" "ubuntu" {
-  most_recent = true
+resource "google_compute_instance" "default" {
+  name         = "test"
+  machine_type = "e2-medium"
+  zone         = "us-central1-a"
 
-  filter {
-    name   = "name"
-    values = ["ubuntu/images/hvm-ssd/ubuntu-focal-20.04-amd64-server-*"]
+  tags = ["foo", "bar"]
+
+  boot_disk {
+    initialize_params {
+      image = "debian-cloud/debian-11"
+      labels = {
+        my_label = "value"
+      }
+    }
   }
 
-  filter {
-    name   = "virtualization-type"
-    values = ["hvm"]
+
+
+  // Local SSD disk
+  
+
+  network_interface {
+    network = "default"
+
+    access_config {
+      // Ephemeral public IP
+    }
   }
 
-  owners = ["099720109477"] # Canonical
-}
-
-resource "aws_instance" "ubuntu" {
-  ami           = data.aws_ami.ubuntu.id
-  instance_type = var.instance_type
-
-  tags = {
-    Name = var.instance_name
+  metadata = {
+    foo = "bar"
   }
+
+  metadata_startup_script = "echo hi > /test.txt"
+
 }
